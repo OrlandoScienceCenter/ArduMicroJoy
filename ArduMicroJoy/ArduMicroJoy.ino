@@ -40,8 +40,9 @@ Created by Hybridsix (Michael King)
 // General Defines
 #define USBDELAY            5          // Delay in MS for the main program loop - needed to not flood USB
 #define LED7SEG_VCC         4
-
-
+#define SYSMODEOFF          0
+#define SYSMODEAUT          1
+#define SYSMODEMAN          2
 
 // NOTE: PINS 2 AND 3 ARE USED BY SDA/SCL AND CANNOT BE USED
 
@@ -64,7 +65,7 @@ Adafruit_7segment LEDmatrix = Adafruit_7segment();
 boolean  remoteBtnA_state = 0;       // Init variables and Set initial button states
 boolean  remoteBtnD_state = 0;       // Init variables and Set initial button states
 boolean  compState        = 0;       // Set computer status to default as off
-
+byte     modeStatus       = 0;       // byte to store mode values in (0-Off, 1-auto, 2-hand)
 
 
 JoyState_t joySt;
@@ -75,15 +76,20 @@ JoyState_t joySt;
 ***********************************************************/
 void setup(){
         // Assign pin modes
+        
+        //Analogs
         pinMode(XAXISPIN, INPUT); 
         pinMode(YAXISPIN, INPUT);   
         pinMode(RUDDPIN, INPUT);            
-        pinMode(THROTPIN, INPUT);           
+        pinMode(THROTPIN, INPUT);      
         
+        //JoystickButtons
         pinMode(JOYPIN1, INPUT);             
         pinMode(JOYPIN2, INPUT);            
         pinMode(JOYPIN3, INPUT);             
         pinMode(JOYPIN4, INPUT);              
+   
+        // Other IO  
         pinMode(MODEPINAUTO, INPUT);        
         pinMode(MODEPINMAN, INPUT);         
         pinMode(SIMRESETPIN, INPUT);          
@@ -94,7 +100,7 @@ void setup(){
         
 
 
-
+      // Set/Reset all the default joystick values to 0
 	joySt.xAxis    = 0;
 	joySt.yAxis    = 0;
 	joySt.throttle = 0;
@@ -102,7 +108,7 @@ void setup(){
 	joySt.buttons  = 0;
 
 LEDmatrix.begin(0x70);
-
+readModeState;
 }
 
 
@@ -110,6 +116,7 @@ LEDmatrix.begin(0x70);
 *                          LOOP                            *
 ***********************************************************/
 void loop(){
+  readModeState;
 /*      // OLD STUFF
 	joySt.xAxis = random(1023);
 	joySt.yAxis = random(1023);
@@ -124,14 +131,24 @@ void loop(){
 	if (joySt.buttons == 0)
 		joySt.buttons = 1;
 */
-  readModeState;
-  
-  readRemoteButtons;
-  
-  readAnalogControls;
 
+
+  switch (modeStatus) {
+     case SYSMODEOFF: {                  // OFF
+       // Do nothing?
+     }
+     case SYSMODEAUT: {
+        readRemoteButtons;
+        readAnalogControls;
+        LEDDisplay;
+        //GameTimer;
+        // And do the auto things, not because they are easy, but becasue they are hard
+     }
+     case SYSMODEMAN: {
+       // We choose to goto the man in this century
+     }
+  }
 	delay(USBDELAY);
-
 	Joystick.setState(&joySt);    // Send that data bits 
 
 }
@@ -164,8 +181,18 @@ void readButtonStates (){
 *                     readModeState                        *
 ***********************************************************/
 void readModeState (){
+   if (digitalRead(MODEPINAUTO)){
+     
+     modeStatus = SYSMODEAUT;   // auto
+     }
+   else if (digitalRead(MODEPINMAN)){
+     modeStatus = SYSMODEMAN;  // manual
+     }
+   else {
+     modeStatus = SYSMODEOFF;   // off
+   }
   // read and set flags for loop
-  // possibly integrate into main loop instead
+  // possibly integrate into main loop instead?
 }
 
 

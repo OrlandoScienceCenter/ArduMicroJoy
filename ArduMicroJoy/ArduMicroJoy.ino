@@ -24,13 +24,13 @@ Created by Hybridsix (Michael King)
 #define JOYPIN1             6
 #define JOYPIN2            18
 #define JOYPIN3            10  
-#define JOYPIN4            12
+#define JOYPIN4            12      // Duplicaated address for REMOTE_ON - both will turn on the system if it is off. 
 
 // General PIN and Button Defines
 #define MODEPINAUTO         5
 #define MODEPINMAN          7
 #define SIMRESETPIN         9  
-#define REMOTEIN_ON         12       // RF Remote input -  Pin D3(A) from RF - ON control
+#define REMOTEIN_ON         12       // RF Remote input -  Pin D3(A) from RF - ON control ---- Duplicaated as define JOYPIN4 
 #define REMOTEIN_OFF        13       // RF Remote input -  Pin D0(D) from RF - OFF control
 #define COMPUTER_PWR        11       // Computer power button pin - ground for press
 #define COMPUTER_SENSE      A5       // Computer power LED pin - tied to +5v of computer PWR LED pin
@@ -74,14 +74,32 @@ JoyState_t joySt;
 *                          SETUP                           *
 ***********************************************************/
 void setup(){
-  
-	pinMode(13, OUTPUT);
+        // Assign pin modes
+        pinMode(XAXISPIN, INPUT); 
+        pinMode(YAXISPIN, INPUT);   
+        pinMode(RUDDPIN, INPUT);            
+        pinMode(THROTPIN, INPUT);           
+        
+        pinMode(JOYPIN1, INPUT);             
+        pinMode(JOYPIN2, INPUT);            
+        pinMode(JOYPIN3, INPUT);             
+        pinMode(JOYPIN4, INPUT);              
+        pinMode(MODEPINAUTO, INPUT);        
+        pinMode(MODEPINMAN, INPUT);         
+        pinMode(SIMRESETPIN, INPUT);          
+        pinMode(REMOTEIN_ON, INPUT);                
+        pinMode(REMOTEIN_OFF, INPUT);         
+        pinMode(COMPUTER_PWR, OUTPUT);              
+        pinMode(COMPUTER_SENSE, INPUT);             
+        
 
-	joySt.xAxis = 0;
-	joySt.yAxis = 0;
-	joySt.throttle = 100;
-        joySt.rudder = 100;
-	joySt.buttons = 0;
+
+
+	joySt.xAxis    = 0;
+	joySt.yAxis    = 0;
+	joySt.throttle = 0;
+        joySt.rudder   = 0;
+	joySt.buttons  = 0;
 
 LEDmatrix.begin(0x70);
 
@@ -92,7 +110,7 @@ LEDmatrix.begin(0x70);
 *                          LOOP                            *
 ***********************************************************/
 void loop(){
-  
+/*      // OLD STUFF
 	joySt.xAxis = random(1023);
 	joySt.yAxis = random(1023);
 	//joySt.zAxis = random(1023);
@@ -105,6 +123,12 @@ void loop(){
 	joySt.buttons <<= 1;
 	if (joySt.buttons == 0)
 		joySt.buttons = 1;
+*/
+  readModeState;
+  
+  readRemoteButtons;
+  
+  readAnalogControls;
 
 	delay(USBDELAY);
 
@@ -150,6 +174,9 @@ void readModeState (){
 ***********************************************************/
 void readRemoteButtons (){
   // read the button /remote controls
+  // Read both digitial inputs for the RF remote buttons and store as state
+  remoteBtnA_state = digitalRead(REMOTEIN_ON);
+  remoteBtnD_state = digitalRead(REMOTEIN_OFF);
   // looking at using pins 12/13 for the input. so. many. pins.  
 }
 
@@ -208,4 +235,12 @@ void turnComputerOff (){
  }
 
 //  Serial.println("computer should be off now");
+}
+
+
+/***********************************************************
+*                        LEDDisplay                        *
+***********************************************************/
+void LEDDisplay(){
+ // code to write out to the display here 
 }

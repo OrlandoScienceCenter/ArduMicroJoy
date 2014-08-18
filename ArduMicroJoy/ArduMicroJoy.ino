@@ -67,12 +67,14 @@ boolean  compState        = 0;       // Set computer status to default as off
 
 
 
-
-
 JoyState_t joySt;
 
-void setup()
-{
+
+/***********************************************************
+*                          SETUP                           *
+***********************************************************/
+void setup(){
+  
 	pinMode(13, OUTPUT);
 
 	joySt.xAxis = 0;
@@ -86,8 +88,11 @@ LEDmatrix.begin(0x70);
 }
 
 
-void loop()
-{
+/***********************************************************
+*                          LOOP                            *
+***********************************************************/
+void loop(){
+  
 	joySt.xAxis = random(1023);
 	joySt.yAxis = random(1023);
 	//joySt.zAxis = random(1023);
@@ -107,9 +112,11 @@ void loop()
 
 }
 
-
-void readAnalogControls()
-{
+/***********************************************************
+*                 readAnalogControls                       *
+***********************************************************/
+void readAnalogControls(){
+  
   // Reads the analog input at full 10bit, and sets joystick variables (16bit) directly
   joySt.xAxis = analogRead(XAXISPIN);
   joySt.yAxis = analogRead(YAXISPIN);
@@ -118,37 +125,51 @@ void readAnalogControls()
 
 }
 
-void readButtonStates ()
-{
+
+
+/***********************************************************
+*                   readButtonStates                       *
+***********************************************************/
+void readButtonStates (){
   // read the pins and record states
   // bitshift into joySt.button
 }
 
-void readModeState ()
 
-{
+/***********************************************************
+*                     readModeState                        *
+***********************************************************/
+void readModeState (){
   // read and set flags for loop
   // possibly integrate into main loop instead
 }
 
-void readRemoteButtons ()
-{
+
+/***********************************************************
+*                   readRemoteButtons                      *
+***********************************************************/
+void readRemoteButtons (){
   // read the button /remote controls
   // looking at using pins 12/13 for the input. so. many. pins.  
 }
 
-
+/***********************************************************
+*               readComputerPowerStates                    *
+***********************************************************/
 void readComputerPowerStates(){
     // Read the computer LED power on pin and store as computer state
     compState = digitalRead(COMPUTER_SENSE);
 }
 
+/***********************************************************
+*                     turnComputerOn                       *
+***********************************************************/
 void turnComputerOn (){
   
 readComputerPowerStates();
   
-  Serial.print("turn on computer - state = ");
-  Serial.println(compState);
+//  Serial.print("turn on computer - state = ");
+ // Serial.println(compState);
   
   if (!compState) {                     // If the computer is NOT on
     pinMode (COMPUTER_PWR, OUTPUT);     // Set control pin to output
@@ -161,16 +182,19 @@ readComputerPowerStates();
    pinMode(COMPUTER_PWR, INPUT);        // so that the on-board button still works
  }
  
- Serial.println("computer should be on now");
+// Serial.println("computer should be on now");
 }
 
-void turnComputerOff ()
 
-{
-readComputerPowerStates();
+/***********************************************************
+*                     turnComputerOff                      *
+***********************************************************/
+void turnComputerOff (){
+
+  readComputerPowerStates();
  
-  Serial.print("turn off computer - state = ");
-  Serial.println(compState);
+//  Serial.print("turn off computer - state = ");
+ // Serial.println(compState);
  
   if (compState) {                        // If the computer is ON
     pinMode (COMPUTER_PWR, OUTPUT);       // set the control pin mode to OUTPUT
@@ -183,5 +207,5 @@ readComputerPowerStates();
    pinMode(COMPUTER_PWR, INPUT);          // so that the on-board button still works
  }
 
-  Serial.println("computer should be off now");
+//  Serial.println("computer should be off now");
 }

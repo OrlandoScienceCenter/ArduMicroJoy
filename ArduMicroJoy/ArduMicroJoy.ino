@@ -22,9 +22,9 @@ Created by Hybridsix (Michael King)
 
 // Joystick Physical Button Pin Defines
 #define JOYPIN1             6
-#define JOYPIN2            18
+#define JOYPIN2             8
 #define JOYPIN3            10  
-#define JOYPIN4            12      // Duplicaated address for REMOTE_ON - both will turn on the system if it is off. 
+#define JOYPIN4            12      // Duplicaated address for REMOTE_ON - both will turn on the system if it is off. (Brakes?)
 
 // General PIN and Button Defines
 #define MODEPINAUTO         5
@@ -34,8 +34,6 @@ Created by Hybridsix (Michael King)
 #define REMOTEIN_OFF        13       // RF Remote input -  Pin D0(D) from RF - OFF control
 #define COMPUTER_PWR        11       // Computer power button pin - ground for press
 #define COMPUTER_SENSE      A5       // Computer power LED pin - tied to +5v of computer PWR LED pin
-
-
 
 // General Defines
 #define USBDELAY            5          // Delay in MS for the main program loop - needed to not flood USB
@@ -65,8 +63,8 @@ Adafruit_7segment LEDmatrix = Adafruit_7segment();
 boolean  remoteBtnA_state = 0;       // Init variables and Set initial button states
 boolean  remoteBtnD_state = 0;       // Init variables and Set initial button states
 boolean  compState        = 0;       // Set computer status to default as off
-byte     modeStatus       = 0;       // byte to store mode values in (0-Off, 1-auto, 2-hand)
-
+byte     modeStatus       = 0;       // byte to store mode values in (0-Off, 1-auto, 2-hand)  
+uint32_t timeMillis       = 0;      
 
 JoyState_t joySt;
 
@@ -117,34 +115,28 @@ readModeState;
 ***********************************************************/
 void loop(){
   readModeState;
-/*      // OLD STUFF
-	joySt.xAxis = random(1023);
-	joySt.yAxis = random(1023);
-	//joySt.zAxis = random(1023);
-	//joySt.throttle = random(1023);
-	
-
-//        joySt.throttle++;
-//	joySt.rudder++;
-
-	joySt.buttons <<= 1;
-	if (joySt.buttons == 0)
-		joySt.buttons = 1;
-*/
-
-
+  
   switch (modeStatus) {
-     case SYSMODEOFF: {                  // OFF
+     case SYSMODEOFF: {         // OFF
+       if(compState){
+       turnComputerOff;
+       }
        // Do nothing?
      }
      case SYSMODEAUT: {
         readRemoteButtons;
+        readButtonStates;
         readAnalogControls;
         LEDDisplay;
         //GameTimer;
         // And do the auto things, not because they are easy, but becasue they are hard
      }
      case SYSMODEMAN: {
+        readRemoteButtons;
+        readButtonStates;
+        readAnalogControls;
+        LEDDisplay;
+        //GameManualReset;
        // We choose to goto the man in this century
      }
   }
@@ -172,6 +164,43 @@ void readAnalogControls(){
 *                   readButtonStates                       *
 ***********************************************************/
 void readButtonStates (){
+    // the code to make the button do 
+  boolean btnArray[15];                        // Setup for full 16 bit/buttons - only using 4 in existing setup.
+  boolean btnArrayPrev[15];                    // a previous value to compare against to see if we need to write changes
+  boolean btnChange = 0;
+  
+  btnArray[0]  = digitalRead(JOYPIN1);
+  btnArray[1]  = digitalRead(JOYPIN2);
+  btnArray[2]  = digitalRead(JOYPIN3);
+  btnArray[3]  = digitalRead(JOYPIN4);
+  btnArray[15] = digitalRead(SIMRESETPIN); 
+
+   for (int i = 0; i < 15; i++){              // checks to see if there is a change between 
+     if (btnArray[i] != btnArrayPrev[i]){     // rounds of button reading
+       btnChange = 1;
+       break;
+     }
+     else {
+       btnChange = 0;
+     }     
+   } 
+
+  if (btnChange){             // If its changed, then write out the var
+    for (byte i = 0; i < 15; i++){          // copy read states to btnArrayPrev[]
+      uint16_t temp;
+      temp = btnArray[i];
+      joySt.buttons = joySt.buttons << i
+    }
+
+    for (byte i = 0; i < 15; i++){          // copy read states to btnArrayPrev[]
+      btnArrayPrev[i] = btnArray[i];
+    }
+
+  if (btnArray[15]) {                        // if the reset button is pressed
+    delay(10);        // Some delays to soften the blow and debounce
+  //  resetFlight = 0; // Set the button state back to 0, don't care what the switch says
+    delay(1000);
+  }
   // read the pins and record states
   // bitshift into joySt.button
 }
@@ -205,6 +234,14 @@ void readRemoteButtons (){
   remoteBtnA_state = digitalRead(REMOTEIN_ON);
   remoteBtnD_state = digitalRead(REMOTEIN_OFF);
   // looking at using pins 12/13 for the input. so. many. pins.  
+  
+  //
+  if (remoteBtnA_state){
+    turnComputerOn;
+  }
+  if (remoteBtnD_state){
+    turnComputerOff;
+  }
 }
 
 /***********************************************************
@@ -271,3 +308,45 @@ void turnComputerOff (){
 void LEDDisplay(){
  // code to write out to the display here 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*      // OLD STUFF
+	joySt.xAxis = random(1023);
+	joySt.yAxis = random(1023);
+	//joySt.zAxis = random(1023);
+	//joySt.throttle = random(1023);
+	
+
+//        joySt.throttle++;
+//	joySt.rudder++;
+
+	joySt.buttons <<= 1;
+	if (joySt.buttons == 0)
+		joySt.buttons = 1;
+*/
+

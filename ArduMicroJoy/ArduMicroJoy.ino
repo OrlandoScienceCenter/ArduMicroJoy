@@ -65,6 +65,8 @@ boolean  remoteBtnD_state = 0;       // Init variables and Set initial button st
 boolean  compState        = 0;       // Set computer status to default as off
 byte     modeStatus       = 0;       // byte to store mode values in (0-Off, 1-auto, 2-hand)  
 uint32_t timeMillis       = 0;      
+boolean btnArrayPrev[16];                    // a previous value to compare against to see if we need to write changes
+
 
 JoyState_t joySt;
 
@@ -121,6 +123,7 @@ void loop(){
        if(compState){
        turnComputerOff;
        }
+       break;
        // Do nothing?
      }
      case SYSMODEAUT: {
@@ -128,6 +131,7 @@ void loop(){
         readButtonStates;
         readAnalogControls;
         LEDDisplay;
+        break;
         //GameTimer;
         // And do the auto things, not because they are easy, but becasue they are hard
      }
@@ -136,6 +140,7 @@ void loop(){
         readButtonStates;
         readAnalogControls;
         LEDDisplay;
+        break;
         //GameManualReset;
        // We choose to goto the man in this century
      }
@@ -165,9 +170,8 @@ void readAnalogControls(){
 ***********************************************************/
 void readButtonStates (){
     // the code to make the button do 
-  boolean btnArray[15];                        // Setup for full 16 bit/buttons - only using 4 in existing setup.
-  boolean btnArrayPrev[15];                    // a previous value to compare against to see if we need to write changes
-  boolean btnChange = 0;
+ boolean btnArray[16];                        // Setup for full 16 bit/buttons - only using 4 in existing setup. 
+ boolean btnChange = 0;
   
   btnArray[0]  = digitalRead(JOYPIN1);
   btnArray[1]  = digitalRead(JOYPIN2);
@@ -175,7 +179,7 @@ void readButtonStates (){
   btnArray[3]  = digitalRead(JOYPIN4);
   btnArray[15] = digitalRead(SIMRESETPIN); 
 
-   for (int i = 0; i < 15; i++){              // checks to see if there is a change between 
+   for (int i = 0; i < 16; i++){              // checks to see if there is a change between 
      if (btnArray[i] != btnArrayPrev[i]){     // rounds of button reading
        btnChange = 1;
        break;
@@ -186,13 +190,12 @@ void readButtonStates (){
    } 
 
   if (btnChange){             // If its changed, then write out the var
-    for (byte i = 0; i < 15; i++){          // copy read states to btnArrayPrev[]
-      uint16_t temp;
-      temp = btnArray[i];
-      joySt.buttons = joySt.buttons << i
+    for (byte i = 0; i < 16; i++){          
+      joySt.buttons <<= i;
+      joySt.buttons += btnArray[i];
     }
 
-    for (byte i = 0; i < 15; i++){          // copy read states to btnArrayPrev[]
+    for (byte i = 0; i < 16; i++){          // copy read states to btnArrayPrev[]
       btnArrayPrev[i] = btnArray[i];
     }
 
@@ -203,6 +206,7 @@ void readButtonStates (){
   }
   // read the pins and record states
   // bitshift into joySt.button
+  }
 }
 
 

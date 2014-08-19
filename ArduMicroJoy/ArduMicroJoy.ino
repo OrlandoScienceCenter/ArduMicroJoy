@@ -63,7 +63,7 @@ Adafruit_7segment LEDmatrix = Adafruit_7segment();
 boolean  remoteBtnA_state = 0;       // Init variables and Set initial button states
 boolean  remoteBtnD_state = 0;       // Init variables and Set initial button states
 boolean  compState        = 0;       // Set computer status to default as off
-byte     modeStatus       = 0;       // byte to store mode values in (0-Off, 1-auto, 2-hand)  
+byte     modeStatus       = 1;       // byte to store mode values in (0-Off, 1-auto, 2-hand)  
 uint32_t timeMillis       = 0;      
 boolean btnArrayPrev[16];                    // a previous value to compare against to see if we need to write changes
 
@@ -98,7 +98,11 @@ void setup(){
         pinMode(COMPUTER_PWR, OUTPUT);              
         pinMode(COMPUTER_SENSE, INPUT);             
         
-
+      // Turn on pullups for joystick buttons
+        digitalWrite(JOYPIN1, HIGH);
+        digitalWrite(JOYPIN2, HIGH);
+        digitalWrite(JOYPIN3, HIGH);
+        digitalWrite(JOYPIN4, HIGH);
 
       // Set/Reset all the default joystick values to 0
 	joySt.xAxis    = 0;
@@ -107,8 +111,9 @@ void setup(){
         joySt.rudder   = 0;
 	joySt.buttons  = 0;
 
-LEDmatrix.begin(0x70);
-readModeState;
+Serial.begin(9600);
+
+//LEDmatrix.begin(0x70);
 }
 
 
@@ -116,34 +121,37 @@ readModeState;
 *                          LOOP                            *
 ***********************************************************/
 void loop(){
-  readModeState;
-  
+  Serial.println("loop");
+ // readModeState();
   switch (modeStatus) {
-     case SYSMODEOFF: {         // OFF
+     case 0: {         // OFF
        if(compState){
-       turnComputerOff;
+       turnComputerOff();
        }
        break;
        // Do nothing?
      }
-     case SYSMODEAUT: {
-        readRemoteButtons;
-        readButtonStates;
-        readAnalogControls;
-        LEDDisplay;
+     case 1: {
+        Serial.println("auto");
+  //      readRemoteButtons();
+        readButtonStates();
+        readAnalogControls();
+    //    LEDDisplay();
         break;
         //GameTimer;
         // And do the auto things, not because they are easy, but becasue they are hard
      }
-     case SYSMODEMAN: {
-        readRemoteButtons;
-        readButtonStates;
-        readAnalogControls;
-        LEDDisplay;
+     case 2: {
+        //readRemoteButtons();
+        readButtonStates();
+        readAnalogControls();
+       // LEDDisplay();
         break;
         //GameManualReset;
        // We choose to goto the man in this century
      }
+     default:
+     Serial.println (" Case statement error");  
   }
 	delay(USBDELAY);
 	Joystick.setState(&joySt);    // Send that data bits 
@@ -154,7 +162,7 @@ void loop(){
 *                 readAnalogControls                       *
 ***********************************************************/
 void readAnalogControls(){
-  
+  Serial.println("reading analog");
   // Reads the analog input at full 10bit, and sets joystick variables (16bit) directly
   joySt.xAxis = analogRead(XAXISPIN);
   joySt.yAxis = analogRead(YAXISPIN);
@@ -168,8 +176,9 @@ void readAnalogControls(){
 /***********************************************************
 *                   readButtonStates                       *
 ***********************************************************/
-void readButtonStates (){
+void readButtonStates(){
     // the code to make the button do 
+      Serial.println("reading Buttons");
  boolean btnArray[16];                        // Setup for full 16 bit/buttons - only using 4 in existing setup. 
  boolean btnChange = 0;
   
@@ -177,11 +186,13 @@ void readButtonStates (){
   btnArray[1]  = digitalRead(JOYPIN2);
   btnArray[2]  = digitalRead(JOYPIN3);
   btnArray[3]  = digitalRead(JOYPIN4);
-  btnArray[15] = digitalRead(SIMRESETPIN); 
+ // btnArray[15] = digitalRead(SIMRESETPIN); 
+  
 
    for (int i = 0; i < 16; i++){              // checks to see if there is a change between 
      if (btnArray[i] != btnArrayPrev[i]){     // rounds of button reading
        btnChange = 1;
+       Serial.println("button changed!");
        break;
      }
      else {
@@ -190,20 +201,21 @@ void readButtonStates (){
    } 
 
   if (btnChange){             // If its changed, then write out the var
-    for (byte i = 0; i < 16; i++){          
+    for (byte i = 0; i < 16; i++){   
+      Serial.print(btnArray[i], DEC);      
       joySt.buttons <<= i;
       joySt.buttons += btnArray[i];
-    }
-
-    for (byte i = 0; i < 16; i++){          // copy read states to btnArrayPrev[]
-      btnArrayPrev[i] = btnArray[i];
-    }
-
-  if (btnArray[15]) {                        // if the reset button is pressed
-    delay(10);        // Some delays to soften the blow and debounce
-  //  resetFlight = 0; // Set the button state back to 0, don't care what the switch says
-    delay(1000);
+        for (byte i = 0; i < 16; i++){          // copy read states to btnArrayPrev[]
+          btnArrayPrev[i] = btnArray[i];
+        }
+      Serial.println();  
   }
+
+ //    if (btnArray[15]) {                        // if the reset button is pressed
+ //   delay(10);        // Some delays to soften the blow and debounce
+  //  resetFlight = 0; // Set the button state back to 0, don't care what the switch says
+ //   delay(1000);
+ // }
   // read the pins and record states
   // bitshift into joySt.button
   }
@@ -213,16 +225,17 @@ void readButtonStates (){
 /***********************************************************
 *                     readModeState                        *
 ***********************************************************/
-void readModeState (){
+void readModeState(){
+  Serial.println("reading mode pins");
    if (digitalRead(MODEPINAUTO)){
      
-     modeStatus = SYSMODEAUT;   // auto
+     modeStatus = 1;   // auto
      }
    else if (digitalRead(MODEPINMAN)){
-     modeStatus = SYSMODEMAN;  // manual
+     modeStatus = 2;  // manual
      }
    else {
-     modeStatus = SYSMODEOFF;   // off
+     modeStatus = 0;   // off
    }
   // read and set flags for loop
   // possibly integrate into main loop instead?
@@ -232,7 +245,7 @@ void readModeState (){
 /***********************************************************
 *                   readRemoteButtons                      *
 ***********************************************************/
-void readRemoteButtons (){
+void readRemoteButtons(){
   // read the button /remote controls
   // Read both digitial inputs for the RF remote buttons and store as state
   remoteBtnA_state = digitalRead(REMOTEIN_ON);
@@ -259,7 +272,7 @@ void readComputerPowerStates(){
 /***********************************************************
 *                     turnComputerOn                       *
 ***********************************************************/
-void turnComputerOn (){
+void turnComputerOn(){
   
 readComputerPowerStates();
   
@@ -284,7 +297,7 @@ readComputerPowerStates();
 /***********************************************************
 *                     turnComputerOff                      *
 ***********************************************************/
-void turnComputerOff (){
+void turnComputerOff(){
 
   readComputerPowerStates();
  

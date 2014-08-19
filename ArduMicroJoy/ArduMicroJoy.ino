@@ -175,46 +175,65 @@ void readButtonStates(){
     // the code to make the button do 
   
   // Code below is sloppy but it works. Look for more elegant button solution later. 
-  btnData += (!digitalRead(SIMRESETPIN));
+  btnData += (digitalRead(SIMRESETPIN));
+  Serial.println(btnData,BIN);
   btnData <<= 1;  
   btnData += (1);          // Button 14
+  Serial.println(btnData,BIN);
   btnData <<= 1;
   btnData += (1);          // Button 13
+  Serial.println(btnData,BIN);
   btnData <<= 1;
   btnData += (1);          // Button 12   
+  Serial.println(btnData,BIN);
   btnData <<= 1;  
   btnData += (1);          // Button 11
+  Serial.println(btnData,BIN);
   btnData <<= 1;
   btnData += (1);          // Button 10 
+  Serial.println(btnData,BIN);
   btnData <<= 1;         
   btnData += (1);          // Button 9
+  Serial.println(btnData,BIN);
   btnData <<= 1;
   btnData += (1);          // Button 8
+  Serial.println(btnData,BIN);
   btnData <<= 1;
   btnData += (1);          // Button 7
+  Serial.println(btnData,BIN);
   btnData <<= 1;
   btnData += (1);          // Button 6
+  Serial.println(btnData,BIN);
   btnData <<= 1;
   btnData += (1);          // Button 5
+  Serial.println(btnData,BIN);
   btnData <<= 1;      
   btnData += (1);          // Button 4
+  Serial.println(btnData,BIN);
   // First 4
   btnData <<= 1;
   btnData += (digitalRead(JOYPIN4));  // Button 3
+  Serial.println(btnData,BIN);
   btnData <<= 1;  
   btnData += (digitalRead(JOYPIN3));  // Button 2
+  Serial.println(btnData,BIN);
   btnData <<= 1;
   btnData += (digitalRead(JOYPIN2));  // Button 1
+  Serial.println(btnData,BIN);  
   btnData <<= 1;    
   btnData += (digitalRead(JOYPIN1));  // Button 0
 
+Serial.println(btnData,BIN);
+       //joySt.buttons = ~btnData;       // Inverts the Pulled up values to be low and writes to
+       Serial.println(joySt.buttons, BIN);
 
-if (btnData != btnDataPrev)  {          // only write out to the variable if there is a change
-       joySt.buttons = ~btnData;       // Inverts the Pulled up values to be low and writes to 
+if (btnData != btnDataPrev)  {          // only write out to the variable if there is a change//
+      joySt.buttons = ~btnData;       // Inverts the Pulled up values to be low and writes to 
     Serial.println("Data changed");       // joySt.buttons variable
     Serial.println(joySt.buttons,BIN);
   btnDataPrev = btnData;
    }
+btnData = 0; 
 }
 
 

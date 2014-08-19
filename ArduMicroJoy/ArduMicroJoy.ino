@@ -65,7 +65,8 @@ boolean  remoteBtnD_state = 0;       // Init variables and Set initial button st
 boolean  compState        = 0;       // Set computer status to default as off
 byte     modeStatus       = 1;       // byte to store mode values in (0-Off, 1-auto, 2-hand)  
 uint32_t timeMillis       = 0;      
-boolean btnArrayPrev[16];                    // a previous value to compare against to see if we need to write changes
+uint16_t btnDataPrev      = 0;       // a previous value to compare against to see if we need to write changes
+uint16_t btnData          = 0;       // Setup for full 16 bit/buttons - only using 4 in existing setup. 
 
 
 JoyState_t joySt;
@@ -84,26 +85,20 @@ void setup(){
         pinMode(THROTPIN, INPUT);      
         
         //JoystickButtons
-        pinMode(JOYPIN1, INPUT);             
-        pinMode(JOYPIN2, INPUT);            
-        pinMode(JOYPIN3, INPUT);             
-        pinMode(JOYPIN4, INPUT);              
+        pinMode(JOYPIN1, INPUT_PULLUP);             
+        pinMode(JOYPIN2, INPUT_PULLUP);            
+        pinMode(JOYPIN3, INPUT_PULLUP);             
+        pinMode(JOYPIN4, INPUT_PULLUP);              
    
         // Other IO  
         pinMode(MODEPINAUTO, INPUT);        
         pinMode(MODEPINMAN, INPUT);         
-        pinMode(SIMRESETPIN, INPUT);          
-        pinMode(REMOTEIN_ON, INPUT);                
+        pinMode(SIMRESETPIN, INPUT_PULLUP);          
+  //      pinMode(REMOTEIN_ON, INPUT);                
         pinMode(REMOTEIN_OFF, INPUT);         
         pinMode(COMPUTER_PWR, OUTPUT);              
         pinMode(COMPUTER_SENSE, INPUT);             
         
-      // Turn on pullups for joystick buttons
-        digitalWrite(JOYPIN1, HIGH);
-        digitalWrite(JOYPIN2, HIGH);
-        digitalWrite(JOYPIN3, HIGH);
-        digitalWrite(JOYPIN4, HIGH);
-
       // Set/Reset all the default joystick values to 0
 	joySt.xAxis    = 0;
 	joySt.yAxis    = 0;
@@ -178,47 +173,48 @@ void readAnalogControls(){
 ***********************************************************/
 void readButtonStates(){
     // the code to make the button do 
-      Serial.println("reading Buttons");
- boolean btnArray[16];                        // Setup for full 16 bit/buttons - only using 4 in existing setup. 
- boolean btnChange = 0;
   
-  btnArray[0]  = digitalRead(JOYPIN1);
-  btnArray[1]  = digitalRead(JOYPIN2);
-  btnArray[2]  = digitalRead(JOYPIN3);
-  btnArray[3]  = digitalRead(JOYPIN4);
- // btnArray[15] = digitalRead(SIMRESETPIN); 
-  
+  // Code below is sloppy but it works. Look for more elegant button solution later. 
+  btnData += (!digitalRead(SIMRESETPIN));
+  btnData <<= 1;  
+  btnData += (1);          // Button 14
+  btnData <<= 1;
+  btnData += (1);          // Button 13
+  btnData <<= 1;
+  btnData += (1);          // Button 12   
+  btnData <<= 1;  
+  btnData += (1);          // Button 11
+  btnData <<= 1;
+  btnData += (1);          // Button 10 
+  btnData <<= 1;         
+  btnData += (1);          // Button 9
+  btnData <<= 1;
+  btnData += (1);          // Button 8
+  btnData <<= 1;
+  btnData += (1);          // Button 7
+  btnData <<= 1;
+  btnData += (1);          // Button 6
+  btnData <<= 1;
+  btnData += (1);          // Button 5
+  btnData <<= 1;      
+  btnData += (1);          // Button 4
+  // First 4
+  btnData <<= 1;
+  btnData += (digitalRead(JOYPIN4));  // Button 3
+  btnData <<= 1;  
+  btnData += (digitalRead(JOYPIN3));  // Button 2
+  btnData <<= 1;
+  btnData += (digitalRead(JOYPIN2));  // Button 1
+  btnData <<= 1;    
+  btnData += (digitalRead(JOYPIN1));  // Button 0
 
-   for (int i = 0; i < 16; i++){              // checks to see if there is a change between 
-     if (btnArray[i] != btnArrayPrev[i]){     // rounds of button reading
-       btnChange = 1;
-       Serial.println("button changed!");
-       break;
-     }
-     else {
-       btnChange = 0;
-     }     
-   } 
 
-  if (btnChange){             // If its changed, then write out the var
-    for (byte i = 0; i < 16; i++){   
-      Serial.print(btnArray[i], DEC);      
-      joySt.buttons <<= i;
-      joySt.buttons += btnArray[i];
-        for (byte i = 0; i < 16; i++){          // copy read states to btnArrayPrev[]
-          btnArrayPrev[i] = btnArray[i];
-        }
-      Serial.println();  
-  }
-
- //    if (btnArray[15]) {                        // if the reset button is pressed
- //   delay(10);        // Some delays to soften the blow and debounce
-  //  resetFlight = 0; // Set the button state back to 0, don't care what the switch says
- //   delay(1000);
- // }
-  // read the pins and record states
-  // bitshift into joySt.button
-  }
+if (btnData != btnDataPrev)  {          // only write out to the variable if there is a change
+       joySt.buttons = ~btnData;       // Inverts the Pulled up values to be low and writes to 
+    Serial.println("Data changed");       // joySt.buttons variable
+    Serial.println(joySt.buttons,BIN);
+  btnDataPrev = btnData;
+   }
 }
 
 
@@ -342,7 +338,49 @@ void LEDDisplay(){
 
 
 
+/*
+array stuff
 
+
+   for (int i = 0; i < 16; i++){              // checks to see if there is a change between 
+     if (btnArray[i] != btnArrayPrev[i]){     // rounds of button reading
+       btnChange = 1;
+       Serial.println("button changed!");
+       break;
+     }
+     else {
+       btnChange = 0;
+     }     
+   } 
+
+  if (btnChange){             // If its changed, then write out the var
+/*    for (int i = 8; i < 0; i--){   
+        //Serial.print(btnArray[i]);      
+        joySt.buttons >>= i;
+        joySt.buttons ^= btnArray[i];
+    }
+      for (int j = 8; j < 16; j++){   
+        //Serial.print(btnArray[i]);      
+        joySt.buttons <<= j;
+        joySt.buttons ^= btnArray[j];
+      }
+     booleansToInt();
+      Serial.println(joySt.buttons, BIN);
+        for (byte n = 0; n < 16; n++){          // copy read states to btnArrayPrev[]
+          btnArrayPrev[n] = btnArray[n];
+        }
+      Serial.println();  
+  }
+
+ //    if (btnArray[15]) {                        // if the reset button is pressed
+ //   delay(10);        // Some delays to soften the blow and debounce
+  //  resetFlight = 0; // Set the button state back to 0, don't care what the switch says
+ //   delay(1000);
+ // }
+  // read the pins and record states
+  // bitshift into joySt.button
+  
+*/
 
 
 

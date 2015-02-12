@@ -17,8 +17,8 @@ Created by Hybridsix (Michael King)
 // Analog Input Defines
 #define XAXISPIN           A0
 #define YAXISPIN           A1
-#define RUDDPIN            A2
-#define THROTPIN           A3
+#define RUDDPIN            A3
+#define THROTPIN           A2
 
 // Joystick Physical Button Pin Defines
 #define JOYPIN1             6
@@ -36,7 +36,7 @@ Created by Hybridsix (Michael King)
 #define COMPUTER_SENSE      A5       // Computer power LED pin - tied to +5v of computer PWR LED pin
 
 // General Defines
-#define USBDELAY            5          // Delay in MS for the main program loop - needed to not flood USB
+#define USBDELAY            10          // Delay in MS for the main program loop - needed to not flood USB
 #define LED7SEG_VCC         4
 #define SYSMODEOFF          0
 #define SYSMODEAUT          1
@@ -208,7 +208,8 @@ void readButtonStates(){
   btnData <<= 1;    
   btnData += (digitalRead(JOYPIN1));  // Button 0
  
-if (btnData != btnDataPrev)  {          // only write out to the variable if there is a change//
+//if (btnData != btnDataPrev)  {          // only write out to the variable if there is a change//
+if (1){
       joySt.buttons = ~btnData;       // Inverts the Pulled up values to be low and writes to 
     Serial.println("Data changed");       // joySt.buttons variable
     Serial.println(joySt.buttons,BIN);

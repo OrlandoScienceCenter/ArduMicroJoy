@@ -17,10 +17,10 @@ Created by Hybridsix (Michael King)
 // Analog Input Defines
 #define XAXISPIN           A0
 #define YAXISPIN           A1
-#define RUDDPIN            A3
 #define THROTPIN           A2
+#define RUDDPIN            A3
 
-// Joystick Physical Button Pin Defines
+// OLD Joystick Physical Button Pin Defines
 #define JOYPIN1             6
 #define JOYPIN2             8
 #define JOYPIN3            10  
@@ -48,14 +48,6 @@ Created by Hybridsix (Michael King)
 *                         INCLUDES                         *
 ***********************************************************/
 #include <Wire.h>                  //I2C Library
-#include <Adafruit_LEDBackpack.h>  //Adafruit Backpack Libraries
-#include <Adafruit_GFX.h>
-
-
-
-//LIBRARY ATTACHMENTS
-Adafruit_7segment LEDmatrix = Adafruit_7segment();
-
 
 /***********************************************************
 *                      GLOBAL VARS                         *
@@ -68,9 +60,7 @@ uint32_t timeMillis       = 0;
 uint16_t btnDataPrev      = 0;       // a previous value to compare against to see if we need to write changes
 uint16_t btnData          = 0;       // Setup for full 16 bit/buttons - only using 4 in existing setup. 
 
-
 JoyState_t joySt;
-
 
 /***********************************************************
 *                          SETUP                           *

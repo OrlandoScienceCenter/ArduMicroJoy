@@ -14,6 +14,8 @@ Created by Hybridsix (Michael King)
 *                         DEFINES                          *
 ***********************************************************/
 
+#define SERIAL_DEBUG        0     // Set to 1 for helpful serial data output. Set to 0 if you want to just set up your own debugging
+
 // Analog Input Defines
 #define XAXISPIN           A0
 #define YAXISPIN           A1
@@ -96,7 +98,7 @@ void setup(){
         joySt.rudder   = 0;
 	joySt.buttons  = 0;
 
-Serial.begin(9600);
+Serial.begin(115200);
 
 //LEDmatrix.begin(0x70);
 }
@@ -106,7 +108,6 @@ Serial.begin(9600);
 *                          LOOP                            *
 ***********************************************************/
 void loop(){
-  Serial.println("loop");
  // readModeState();
   switch (modeStatus) {
      case 0: {         // OFF
@@ -117,7 +118,7 @@ void loop(){
        // Do nothing?
      }
      case 1: {
-        Serial.println("auto");
+        if (SERIAL_DEBUG == 1){Serial.println("auto");}
   //      readRemoteButtons();
         readButtonStates();
         readAnalogControls();
@@ -136,7 +137,7 @@ void loop(){
        // We choose to goto the man in this century
      }
      default:
-     Serial.println (" Case statement error");  
+     if (SERIAL_DEBUG == 1){Serial.println (" Case statement error");}
   }
 	delay(USBDELAY);
 	Joystick.setState(&joySt);    // Send that data bits 
@@ -147,7 +148,7 @@ void loop(){
 *                 readAnalogControls                       *
 ***********************************************************/
 void readAnalogControls(){
-  Serial.println("reading analog");
+  if (SERIAL_DEBUG == 1){Serial.println("reading analog");}
   // Reads the analog input at full 10bit, and sets joystick variables (16bit) directly
   joySt.xAxis = analogRead(XAXISPIN);
   joySt.yAxis = analogRead(YAXISPIN);
@@ -201,8 +202,8 @@ void readButtonStates(){
 //if (btnData != btnDataPrev)  {          // only write out to the variable if there is a change//
 if (1){
       joySt.buttons = ~btnData;       // Inverts the Pulled up values to be low and writes to 
-    Serial.println("Data changed");       // joySt.buttons variable
-    Serial.println(joySt.buttons,BIN);
+    if (SERIAL_DEBUG == 1){Serial.println("Data changed");}       // joySt.buttons variable
+    if (SERIAL_DEBUG == 1){Serial.println(joySt.buttons,BIN);}
   btnDataPrev = btnData;
    }
 btnData = 0; 
@@ -213,7 +214,7 @@ btnData = 0;
 *                     readModeState                        *
 ***********************************************************/
 void readModeState(){
-  Serial.println("reading mode pins");
+  if (SERIAL_DEBUG == 1){Serial.println("reading mode pins");}
    if (digitalRead(MODEPINAUTO)){
      
      modeStatus = 1;   // auto

@@ -1,4 +1,3 @@
-
 /*
 Arduino Micro Joystick Control - Designed for OSC Exhibits
 
@@ -19,8 +18,8 @@ Created by Hybridsix (Michael King)
 // Analog Input Defines
 #define XAXISPIN           A0
 #define YAXISPIN           A1
-#define THROTPIN           A2
-#define RUDDPIN            A3
+#define RUDDPIN            A2
+#define THROTPIN           A3
 
 // OLD Joystick Physical Button Pin Defines
 #define JOYPIN1             6
@@ -86,12 +85,12 @@ void setup(){
         pinMode(MODEPINAUTO, INPUT);        
         pinMode(MODEPINMAN, INPUT);         
         pinMode(SIMRESETPIN, INPUT_PULLUP);          
-  //      pinMode(REMOTEIN_ON, INPUT);                
+        // pinMode(REMOTEIN_ON, INPUT);                
         pinMode(REMOTEIN_OFF, INPUT);         
         pinMode(COMPUTER_PWR, OUTPUT);              
         pinMode(COMPUTER_SENSE, INPUT);             
         
-      // Set/Reset all the default joystick values to 0
+        // Set/Reset all the default joystick values to 0
 	joySt.xAxis    = 0;
 	joySt.yAxis    = 0;
 	joySt.throttle = 0;
@@ -149,12 +148,13 @@ void loop(){
 ***********************************************************/
 void readAnalogControls(){
   if (SERIAL_DEBUG == 1){Serial.println("reading analog");}
-  // Reads the analog input at full 10bit, and sets joystick variables (16bit) directly
-  joySt.xAxis = analogRead(XAXISPIN);
-  joySt.yAxis = analogRead(YAXISPIN);
-  joySt.rudder = analogRead(RUDDPIN);
-  joySt.throttle = analogRead(THROTPIN);
 
+  joySt.xAxis = map(analogRead(XAXISPIN), 0, 900, 0, 255);
+  joySt.yAxis = map(analogRead(YAXISPIN), 930, 0, 0, 255);
+  joySt.rudder = analogRead(RUDDPIN);
+  joySt.throttle = map(analogRead(THROTPIN), 730, 290, 255, 0);
+  
+  Serial.println(analogRead(YAXISPIN));
 }
 
 
@@ -303,97 +303,5 @@ void turnComputerOff(){
    pinMode(COMPUTER_PWR, INPUT);          // so that the on-board button still works
  }
 
-//  Serial.println("computer should be off now");
+  // Serial.println("computer should be off now");
 }
-
-
-/***********************************************************
-*                        LEDDisplay                        *
-***********************************************************/
-void LEDDisplay(){
- // code to write out to the display here 
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-array stuff
-
-
-   for (int i = 0; i < 16; i++){              // checks to see if there is a change between 
-     if (btnArray[i] != btnArrayPrev[i]){     // rounds of button reading
-       btnChange = 1;
-       Serial.println("button changed!");
-       break;
-     }
-     else {
-       btnChange = 0;
-     }     
-   } 
-
-  if (btnChange){             // If its changed, then write out the var
-/*    for (int i = 8; i < 0; i--){   
-        //Serial.print(btnArray[i]);      
-        joySt.buttons >>= i;
-        joySt.buttons ^= btnArray[i];
-    }
-      for (int j = 8; j < 16; j++){   
-        //Serial.print(btnArray[i]);      
-        joySt.buttons <<= j;
-        joySt.buttons ^= btnArray[j];
-      }
-     booleansToInt();
-      Serial.println(joySt.buttons, BIN);
-        for (byte n = 0; n < 16; n++){          // copy read states to btnArrayPrev[]
-          btnArrayPrev[n] = btnArray[n];
-        }
-      Serial.println();  
-  }
-
- //    if (btnArray[15]) {                        // if the reset button is pressed
- //   delay(10);        // Some delays to soften the blow and debounce
-  //  resetFlight = 0; // Set the button state back to 0, don't care what the switch says
- //   delay(1000);
- // }
-  // read the pins and record states
-  // bitshift into joySt.button
-  
-*/
-
-
-
-
-
-
-
-
-
-/*      // OLD STUFF
-	joySt.xAxis = random(1023);
-	joySt.yAxis = random(1023);
-	//joySt.zAxis = random(1023);
-	//joySt.throttle = random(1023);
-	
-
-//        joySt.throttle++;
-//	joySt.rudder++;
-
-	joySt.buttons <<= 1;
-	if (joySt.buttons == 0)
-		joySt.buttons = 1;
-*/
-

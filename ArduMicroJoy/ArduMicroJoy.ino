@@ -203,7 +203,7 @@ void readButtonStates(){
 if (1){
       joySt.buttons = ~btnData;       // Inverts the Pulled up values to be low and writes to 
     if (SERIAL_DEBUG == 1){Serial.println("Data changed");}       // joySt.buttons variable
-    if (SERIAL_DEBUG == 1){Serial.println(joySt.buttons,BIN);}
+    if (SERIAL_DEBUG == 1){Serial.print("Joystick button: "); Serial.println(joySt.buttons, BIN);}
   btnDataPrev = btnData;
    }
 btnData = 0; 
